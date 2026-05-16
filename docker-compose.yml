@@ -1,0 +1,42 @@
+services:
+  # 1. Hardened Production React Asset Build
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    # No volumes mapped here for production execution
+
+  # 2. Hardened Production Express Layer
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    # Volumetric code mirrors are removed completely to preserve compiled dist integrity
+    environment:
+      - PORT=3000
+      - MONGO_URI=mongodb://mongodb:27017/documind?replicaSet=rs0
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - OPENAI_API_KEY=${OPENROUTER_API_KEY}
+    depends_on:
+      - mongodb
+
+  # 3. Production Grade Containerized Cluster Store
+  mongodb:
+    image: mongo:7.0
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_production_store:/data/db
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate() }" | mongosh --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongo_production_store:

@@ -1,0 +1,30 @@
+name: CI/CD Blueprint Pipeline
+
+on:
+  push:
+    branches: ["main", "develop"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code Base
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: "./backend/package-lock.json"
+
+      - name: Build Test Backend
+        run: |
+          cd backend
+          npm ci
+          npm run build
+
+      - name: Test Docker Compilation Structure
+        uses: docker/setup-buildx-action@v3

@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+   
+# Production Build Outputs
+dist/
+build/
+   
+# Environment Secrets (Crucial for security!)
+.env
+.env.local
+.env.*.local
+   
+# Docker / OS Noise
+.dockerignore
+.DS_Store
+Thumbs.db
